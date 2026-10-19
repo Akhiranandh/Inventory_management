@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#14283f">
+  <title>{% block title %}StockPilot{% endblock %} | StockPilot</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <script src="{{ url_for('static', filename='script.js') }}" defer></script>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <a class="brand" href="{{ url_for('dashboard') }}" aria-label="StockPilot dashboard">
+        <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+        <span>Stock<span class="brand-light">Pilot</span><small>WAREHOUSE CONTROL</small></span>
+      </a>
+      <div class="nav-label">WORKSPACE</div>
+      <nav class="side-nav" aria-label="Main navigation">
+        <a href="{{ url_for('dashboard') }}" class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="5" rx="1.5"/><rect x="13" y="10" width="8" height="11" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/></svg>Overview
+        </a>
+        <a href="{{ url_for('inventory_list') }}" class="nav-link {% if request.endpoint in ['inventory_list', 'create_inventory_item', 'product_detail', 'edit_inventory_item'] %}active{% endif %}">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 7 9-4 9 4v10l-9 4-9-4V7Z"/><path d="m3 7 9 4 9-4M12 11v10M7.5 5l9 4"/></svg>Inventory
+        </a>
+        <a href="{{ url_for('movement_history') }}" class="nav-link {% if request.endpoint == 'movement_history' %}active{% endif %}">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.34-5.66L4 8.7"/><path d="M4 4v4.7h4.7M12 7v5l3 2"/></svg>Stock movements
+        </a>
+        <a href="{{ url_for('reports') }}" class="nav-link {% if request.endpoint == 'reports' %}active{% endif %}">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V5M4 19h17"/><path d="m7 15 4-4 3 2 6-7"/></svg>Reports
+        </a>
+      </nav>
+      <div class="sidebar-bottom">
+        <div class="sidebar-status"><span class="status-dot"></span><span>Signed in as <b>{{ current_username() }}</b></span></div>
+        <span class="sidebar-version">STOCKPILOT · LOCAL</span>
+      </div>
+    </aside>
+
+    <main class="main-area">
+      <header class="topbar">
+        <button class="icon-button menu-toggle" type="button" aria-label="Open navigation" aria-controls="sidebar" aria-expanded="false" data-menu-toggle>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </button>
+        <div class="breadcrumb"><span>Warehouse</span><b>/</b>{% block breadcrumb %}Overview{% endblock %}</div>
+        <div class="topbar-right"><span class="today-label">{{ now().strftime('%A, %d %b %Y') if now is defined else '' }}</span><span class="account-name">{{ current_username() }}</span><form method="post" action="{{ url_for('logout') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="logout-button" type="submit" aria-label="Sign out">Sign out</button></form></div>
+      </header>
+      <section class="page-content">
+        <div class="flash-stack" aria-live="polite" aria-atomic="false">
+          {% for category, message in get_flashed_messages(with_categories=true) %}
+            <div class="flash flash-{{ category }}" role="status"><span>{{ message }}</span><button type="button" aria-label="Dismiss notification" data-dismiss>&times;</button></div>
+          {% endfor %}
+        </div>
+        {% block content %}{% endblock %}
+      </section>
+      <footer class="page-footer"><span>StockPilot</span><span>Inventory data stored on this device</span></footer>
+    </main>
+  </div>
+</body>
+</html>

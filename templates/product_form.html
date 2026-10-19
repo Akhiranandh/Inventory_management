@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}{{ form_title }}{% endblock %}
+{% block breadcrumb %}<a href="{{ url_for('inventory_list') }}">Inventory</a> <b>/</b> {{ form_title }}{% endblock %}
+{% block content %}
+<div class="page-heading"><div><p class="eyebrow">PRODUCT RECORD</p><h1>{{ form_title }}</h1><p class="page-subtitle">{% if editing %}Update product details. Use stock movements to change quantities.{% else %}Add an item to the warehouse inventory.{% endif %}</p></div><a class="button button-secondary" href="{{ url_for('inventory_list') }}">Cancel</a></div>
+<form class="panel product-form" method="post">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <div class="form-section-heading"><span class="section-number">01</span><div><h2>Product information</h2><p>Identify the product and where it is stored.</p></div></div>
+  <div class="form-grid">
+    <label class="field"><span>Item ID <i>*</i></span><input name="item_id" value="{{ product.get('item_id', '') }}" {% if editing %}readonly{% else %}required{% endif %} maxlength="100" autocomplete="off"><small>A unique warehouse identifier.</small></label>
+    <label class="field"><span>Product name <i>*</i></span><input name="name" value="{{ product.get('name', '') }}" required maxlength="200" autocomplete="off"></label>
+    <label class="field"><span>Warehouse location <i>*</i></span><input name="location" value="{{ product.get('location', '') }}" required maxlength="150" placeholder="e.g. Aisle 04 · Shelf B"></label>
+    {% if not editing %}<label class="field"><span>Opening quantity <i>*</i></span><input name="quantity" type="number" min="1" step="1" value="{{ product.get('quantity', '') }}" required><small>Recorded as the initial stock-in movement.</small></label>{% else %}<div class="field field-readonly"><span>Current quantity</span><div>{{ product.get('quantity', 0) }} <small>units · update through stock movements</small></div></div>{% endif %}
+    <label class="field"><span>Expiry date <i>*</i></span><input name="expiry" value="{{ product.get('expiry', '') }}" required inputmode="numeric" placeholder="DD-MM-YYYY" pattern="\d{2}-\d{2}-\d{4}" aria-describedby="expiry-help"><small id="expiry-help">Use DD-MM-YYYY, for example 25-12-2027.</small></label>
+  </div>
+  <div class="form-actions"><a class="button button-secondary" href="{{ url_for('inventory_list') }}">Cancel</a><button class="button button-primary" type="submit">{{ 'Save changes' if editing else 'Add to inventory' }}</button></div>
+</form>
+{% endblock %}

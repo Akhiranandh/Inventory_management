@@ -1,0 +1,4 @@
+{% extends "base.html" %}
+{% block title %}Something went wrong{% endblock %}
+{% block breadcrumb %}Error{% endblock %}
+{% block content %}<section class="error-page"><span class="error-code">!</span><p class="eyebrow">REQUEST NOT COMPLETED</p><h1>Something went wrong.</h1><p class="page-subtitle">{{ message|default('The request could not be completed. Your inventory data has not been intentionally changed.') }}</p><a class="button button-primary" href="{{ url_for('dashboard') }}">Back to overview</a></section>{% endblock %}

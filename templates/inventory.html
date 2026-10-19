@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Inventory{% endblock %}
+{% block breadcrumb %}Inventory{% endblock %}
+{% block content %}
+<div class="page-heading">
+  <div><p class="eyebrow">STOCK CONTROL</p><h1>Inventory</h1><p class="page-subtitle">Search, review and manage products across your warehouse.</p></div>
+  <div class="heading-actions"><a class="button button-secondary" href="{{ url_for('export_csv', q=request.args.get('q', ''), expiry=request.args.get('expiry', 'all'), stock=request.args.get('stock', 'all'), sort=request.args.get('sort', 'name'), direction=request.args.get('direction', 'asc')) }}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 17v4h16v-4"/></svg>Export CSV</a><a class="button button-primary" href="{{ url_for('create_inventory_item') }}"><span aria-hidden="true">+</span> Add product</a></div>
+</div>
+<section class="panel inventory-panel">
+  <form class="filter-bar" method="get" action="{{ url_for('inventory_list') }}">
+    <label class="search-field"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 5 5"/></svg><span class="visually-hidden">Search inventory</span><input type="search" name="q" value="{{ request.args.get('q', '') }}" placeholder="Search ID, product or location"></label>
+    <label class="select-filter"><span class="visually-hidden">Expiry status</span><select name="expiry"><option value="all" {% if request.args.get('expiry', 'all') == 'all' %}selected{% endif %}>All expiry dates</option><option value="expired" {% if request.args.get('expiry') == 'expired' %}selected{% endif %}>Expired</option><option value="soon" {% if request.args.get('expiry') == 'soon' %}selected{% endif %}>Expiring soon</option><option value="in-date" {% if request.args.get('expiry') == 'in-date' %}selected{% endif %}>In date</option></select></label>
+    <label class="select-filter"><span class="visually-hidden">Stock status</span><select name="stock"><option value="all" {% if request.args.get('stock', 'all') == 'all' %}selected{% endif %}>All stock levels</option><option value="low" {% if request.args.get('stock') == 'low' %}selected{% endif %}>Low stock</option><option value="normal" {% if request.args.get('stock') == 'normal' %}selected{% endif %}>Normal stock</option></select></label>
+    <label class="select-filter"><span class="visually-hidden">Sort inventory</span><select name="sort"><option value="name" {% if request.args.get('sort', 'name') == 'name' %}selected{% endif %}>Sort: Name</option><option value="quantity" {% if request.args.get('sort') == 'quantity' %}selected{% endif %}>Sort: Quantity</option><option value="expiry" {% if request.args.get('sort') == 'expiry' %}selected{% endif %}>Sort: Expiry</option><option value="location" {% if request.args.get('sort') == 'location' %}selected{% endif %}>Sort: Location</option></select></label>
+    <input type="hidden" name="direction" value="{{ request.args.get('direction', 'asc') }}"><button class="button button-filter" type="submit">Apply</button>
+  </form>
+  <div class="table-toolbar"><span><b>{{ products|length }}</b> {{ 'product' if products|length == 1 else 'products' }} shown</span><div class="sort-direction"><a href="{{ url_for('inventory_list', q=request.args.get('q', ''), expiry=request.args.get('expiry', 'all'), stock=request.args.get('stock', 'all'), sort=request.args.get('sort', 'name'), direction='asc') }}" aria-label="Sort ascending" class="{% if request.args.get('direction', 'asc') == 'asc' %}selected{% endif %}">↑</a><a href="{{ url_for('inventory_list', q=request.args.get('q', ''), expiry=request.args.get('expiry', 'all'), stock=request.args.get('stock', 'all'), sort=request.args.get('sort', 'name'), direction='desc') }}" aria-label="Sort descending" class="{% if request.args.get('direction') == 'desc' %}selected{% endif %}">↓</a></div></div>
+  {% if products %}<div class="table-wrap"><table class="inventory-table"><thead><tr><th>PRODUCT</th><th>LOCATION</th><th>QUANTITY</th><th>EXPIRY DATE</th><th>STATUS</th><th><span class="visually-hidden">Actions</span></th></tr></thead><tbody>
+    {% for product in products %}<tr>
+      <td><a class="product-cell" href="{{ url_for('product_detail', product_id=product.id) }}"><span class="product-initial">{{ product.name[:1]|upper }}</span><span><b>{{ product.name }}</b><small>{{ product.item_id }}</small></span></a></td>
+      <td>{{ product.location }}</td><td><b class="quantity-number">{{ product.quantity }}</b><span class="unit-label"> units</span></td>
+      <td><span>{{ product.expiry }}</span><small class="cell-subtext">{{ expiry_status(product.expiry) }}</small></td>
+      <td><div class="badge-stack"><span class="badge badge-{{ stock_status(product.quantity)|lower|replace(' ', '-') }}">{{ stock_status(product.quantity) }}</span><span class="badge badge-{{ expiry_status(product.expiry)|lower|replace(' ', '-') }}">{{ expiry_status(product.expiry) }}</span></div></td>
+      <td><a class="row-action" href="{{ url_for('product_detail', product_id=product.id) }}" aria-label="View {{ product.name }}">View <span aria-hidden="true">→</span></a></td>
+    </tr>{% endfor %}
+  </tbody></table></div>{% else %}
+  <div class="empty-state"><span class="empty-symbol">⌕</span><h3>No products match</h3><p>{% if request.args.get('q') or request.args.get('expiry') not in [none, 'all'] or request.args.get('stock') not in [none, 'all'] %}Try changing or clearing your filters.{% else %}Add your first product to start tracking warehouse stock.{% endif %}</p><a class="button button-secondary" href="{{ url_for('inventory_list') }}">Clear filters</a></div>
+  {% endif %}
+</section>
+{% endblock %}
